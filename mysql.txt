@@ -1,0 +1,135 @@
+Ôn Tập Mysql
+Thực hiện các truy vấn sau:
+a- Hiển thị các vùng: MaNV,HoNV,TenNV,NgaySinh,DiaChi,DienThoai những mẫu tin có số điện thọai
+
+SELECT * FROM qlbanhang.nhanvien where DienThoai is not null;
+
+b- Hiển thị các vùng: MaNV,HoNV,TenNV,NgaySinh,DiaChi,DienThoai những mẫu tin không có số điện thọai 
+
+SELECT * FROM qlbanhang.nhanvien where DienThoai is null;
+
+c- Tạo truy vấn gồm các vùng: MaHD, NgayLapHD, TenKH, MaSP, SoLuong, ThanhTien :[DonGia]*[SoLuong]
+
+SELECT DISTINCT h.MaHD , h.NgayLapHD , k.HoTenKH , c.MaSP,c.SoLuong ,c.SoLuong * s.DonGia as Thanhtien 
+FROM hoadon as h , khachhang as k , chitiethd as c ,sanpham s 
+where h.MaKH = k.MaKH AND C.MaSP = S.MaSP AND c.MaHD = h.MaHD 
+order by h.MaHD asc ;
+
+d- Hiển thị các vùng: MaHD, TenSP, SoLuong, ThanhTien của những khách hàng đã mua hàng
+
+SELECT DISTINCT h.MaHD ,  s.TenSP , c.SoLuong ,c.SoLuong * s.DonGia as Thanhtien 
+FROM hoadon as h  , chitiethd as c ,sanpham as s , khachhang as k
+where  C.MaSP = s.MaSP AND c.MaHD = h.MaHD and k.MaKH = h.MaKH
+order by h.MaHD asc ;
+
+e- Hiển thị các vùng: MaHD, TenSP, SoLuong, ThanhTien của những khách hàng đã mua hàng trong tháng 7/99
+
+SELECT DISTINCT h.MaHD ,  s.TenSP , c.SoLuong ,c.SoLuong * s.DonGia as Thanhtien 
+FROM hoadon as h  , chitiethd as c ,sanpham as s , khachhang as k
+where  C.MaSP = s.MaSP AND c.MaHD = h.MaHD and k.MaKH = h.MaKH and h.NgayLapHD BETWEEN '2012-07-01 00:00:00' AND '2012-07-31 23:59:59'
+order by h.MaHD asc ;
+
+f- Tạo truy vấn gồm các vùng: MaSP, TenSP, DonGia,GiaCongThue:[Dongia]*110%
+
+SELECT DISTINCT s.MaSP ,  s.TenSP , s.DonGia , (s.DonGia * (110/100) ) as GiaCongThue
+FROM sanpham as s 
+
+a - Tổng kết xem từng khách hàng của công ty đã mua mặt hàng với số là tiền bao nhiêu
+
+SELECT  k.Makh ,  SUM(s.DonGia*c.SoLuong) AS TỔNG
+FROM  hoadon as h , chitiethd as c , sanpham as s , khachhang as k
+where h.MaHD = c.MaHD and c.MaSP = s.MaSP and k.MaKH = h.MaKH
+Group by h.Makh
+
+b- Cho biết các Khách hàng đã đặt bao nhiêu Hóa đơn mặt hàng “R02”
+
+SELECT count(C.MaSP) AS SL_HD_R02
+FROM  hoadon as h , chitiethd as c
+where h.MaHD = C.MaHD and c.MaSP ='B01';
+
+c- Tổng kết xem từng khách hàng của công ty đã mua mặt hàng trong tháng hiện hành với số tiền là bao nhiêu
+
+SELECT  k.Makh ,  SUM(s.DonGia*c.SoLuong) AS TỔNG
+FROM  hoadon as h , chitiethd as c , sanpham as s , khachhang as k
+where h.MaHD = c.MaHD and c.MaSP = s.MaSP and k.MaKH = h.MaKH AND h.NgayLapHD BETWEEN '2012-07-01 00:00:00' AND '2012-07-31'
+Group by h.Makh
+
+d- Từ bảng ChiTietHD Thống kê Tổng số lượng theo Mã sản Phẩm
+
+SELECT  C.MaSP ,  SUM(c.SoLuong) AS TỔNG
+FROM   chitiethd as c 
+Group by c.MaSP
+
+e- Từ bảng ChiTietHD Thống kê Tổng số lượng theo Mã Hóa Đơn
+
+SELECT  C.MaHD ,  SUM(c.SoLuong) AS TỔNG
+FROM   chitiethd as c 
+Group by c.Mahd
+
+f- Từ bảng sản phẩm lấy ra các sản phẩm mà tên sản phẩm có chữ 'B'
+
+SELECT * FROM qlbanhang.sanpham
+WHERE TenSP LIKE 'B%'
+ Hoặc
+
+SELECT * FROM qlbanhang.sanpham
+WHERE left(TenSP,1) ='B'
+
+
+g- Liệt kê danh sách sản phẩm có chữ 'ne'
+
+SELECT * FROM qlbanhang.sanpham
+where TenSP LIKE "% ne%" or "%ne "
+
+h- liệt kê 3 sản phẩm có giá cao nhất 
+
+SELECT * FROM qlbanhang.sanpham
+order by DonGia DESC
+LIMIT 0,3
+
+i- Thống kê đơn gồm các thông tin sau:số hóa đơn , ngày lập hd , tổng số sản phẩm , tổng thành tiền
+SELECT h.MaHD , NgayLapHD , count(c.MaSP),sum(soluong*DonGia) as Tổngtiền
+FROM hoadon as h , chitiethd as c , sanpham as s
+where h.MaHD = c.MaHD AND c.MaSP = s.MaSP
+group by c.Mahd
+
+SELECT h.MaHD , NgayLapHD , count(c.MaSP),sum(soluong*DonGia) as Tổngtiền
+FROM hoadon as h Inner join chitiethd as c inner join sanpham as s on h.MaHD = c.MaHD AND c.MaSP = s.MaSP
+group by c.Mahd
+
+j- Thống kê đơn gồm các thông tin sau:số hóa đơn , ngày lập hd , tổng số sản phẩm ( >= 2), tổng thành tiền
+
+SELECT h.MaHD , NgayLapHD , count(c.MaSP),sum(soluong*DonGia) as Tổngtiền
+FROM hoadon as h Inner join chitiethd as c inner join sanpham as s on h.MaHD = c.MaHD AND c.MaSP = s.MaSP
+group by c.Mahd,NgayLapHD
+having count(c.MaSP) >= 2
+
+k- Liệt kê các khách hàng chưa mua hàng 
+
+select MaKH ,HoTenKH from khachhang where Makh not in 
+(SELECT distinct k.MaKH
+FROM khachhang AS k , hoadon as h
+where k.MaKH = h.MaKh )
+
+L- Liệt kê các sản phẩm chưa được được mua 
+
+select MaSP,TenSP
+from sanpham 
+where MaSP NOT in(SELECT distinct MaSP FROM chitiethd) 
+
+M - Liệt kê sản phẩm có danh thu cao nhất
+
+SELECT S.MaSP,s.TenSP,sum(SoLuong*DonGia) AS DoanhThu FROM sanpham as s inner join chitiethd as ct on s.MaSP = ct.MaSP
+group by MaSP 
+order by sum(SoLuong*DonGia) desc
+limit 0,1
+
+Bài Update 
+1 - cập nhật lại đơn giá cho sản phẩm có masp=R02 với giá là 20000
+
+update sanpham set Dongia="20000" where Masp = "R02"
+
+
+
+
+
